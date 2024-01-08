@@ -216,6 +216,15 @@ I understand the need for consistency in formatting for VSCode. I'll ensure the 
   - use the Django deployment checklist, especially update DEBUG and ALLOWED_HOSTS
   - "When we installed `environs[django]` earlier, the Django “goodies” included the elegant `dj-database-url129` package, which takes all the database configurations needed for our database, SQLite or PostgreSQL. This will be very helpful later on in production."
 ### 10. email; adding a dedicated 3party provider
+  - "email_confirmation_- message.txt file located within django-allauth/allauth/templates/account/email. If you look at this directory’s content there is also a subject line file, email_confirmation_message.txt that we can and will change.
+  - To customize these files we’ll override them by recreating the same structure of django-allauth in our project. That means creating an email directory within the templates/account directory."
+  - internalization functionality helps support multiple languages
+  - autoescape template tag is automatically on and protects against XSS
+  - site name is in the `sites` section of the Django admin, used by `django-allauth`
+  - set `DEFAULT_FROM_EMAIL` in `settings.py`
+  - The locations of the `django-allauth` default password reset and password change pages are as follows: • http://127.0.0.1:8000/accounts/password/reset/
+                        • http://127.0.0.1:8000/accounts/password/change/
+  - when ready to use a real email server, add `EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"` to `settings.py` and configure EMAIL_HOST, EMAIL_HOST_USER, EMAIL_HOST_- PASSWORD, EMAIL_PORT, and EMAIL_USE_TLS based on the instructions from your email provider as environment variables.
 ### 11. models, tests, pages for bookstore via `books` app
 ### 12. addition of reviews to bookstore; FOREIGN KEYS
 ### 13. image uploading
