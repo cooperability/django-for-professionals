@@ -246,7 +246,16 @@ I understand the need for consistency in formatting for VSCode. I'll ensure the 
   - If you create a UU ID for all existing entries in your database, a new migration would cause serious problems. Instead, simply delete old migrations and start over.
     - `docker-compose exec web rm -r books/migrations`
 
-### 12. addition of reviews to bookstore; FOREIGN KEYS
+### 12. addition of reviews to bookstore; FOREIGN KEYS, app structure, forms
+  - Three kinds of foreign key relatonships
+    - **One-to-one** - rare in practice, unusual for both sides to only match with one counterpart, but examples are country-flag or person-passport
+    - **One-to-many** - more common, also the default foreign key setting within Django. Example is person-payments. 
+    - **Many-to-many** - examples are a list of books and list of authors, where any number of authors can write a book and each author can write more than one book. Another example is doctors and patients, since each doctor sees multiple patients and vice versa, or employees and tasks
+  - **Normalization** is the process of structuring a relational database
+  - simplest reviews implementation is a one-to-many between authors and reviews
+  - standard practice is to name the one-to-many foreign key after the linked model, i.e. the `book` field in the Books -> `Review` model is a one-to-many key that links reviews to books, and its `related_name` is "reviews". As well, we will populate the author field in reviews. related_name must be unique.
+  - Django does not store raw passwords which means even as a superuser we cannot see individual user passwords. We can change the password to something else but we can’t just copy and paste user passwords. All passwords are encrypted by default.
+  
 ### 13. image uploading
 ### 14. site permissions; lockdown
 ### 15. complex search
