@@ -310,6 +310,41 @@ I understand the need for consistency in formatting for VSCode. I'll ensure the 
                     <input class="form-control me-2" type="search" name="q" placeholder="Search" aria-\ label="Search">
                     <button class="btn btn-outline-success" type="submit">Search</button>
                 </form>
+
 ### 16. performance optimizations via `django-debug-toolbar` to inspect queries/templates, database indexes, front-end assets, multiple built-in caching options
+  - Django performance comes down to four major areas: optimizing database queries, caching, indexes, and compressing front-end assets like images, JavaScript, and CSS.
+  - use `django-debug-toolbar` comes with a configurable set of panels for inspecting the complete requuest/response cycle of any page.
+    - Needs to be configured iin `INSTALLED_APPS`, Middleware, and `INTERNAL_IPS`.
+    - For setup on a web server withiin docker, additional infra at end of `settings.py to ensure INTERNAL_IPS matches that of our docker host:
+      - #django-debug-toolbar
+        import socket
+        hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+        INTERNAL_IPS = [ip[:-1] + "1" for ip in ips]
+  - Django for Professionals book page there are six queries being run:
+    - the sessions framework215 to manage users
+    - to accounts_customuser to load our user
+    - to books_book to load the “Django for Professionals” book • to books_review to load the reviews
+    - and then 2 more queries to accounts_customuser
+  - Count and label queries on one page using the debug toolbar, flag duplicates, reduce queries
+  - There are two powerful methods included in the Django ORM to help us that can boost performance by creating a single more complex QuerySet rather than multiple, smaller queries:
+    - `select_related` for Foreign Key relationships, returns a QuerySet that follows foreign-key relationships, either 1to1 or manytomany, selecting additional related-object data as needed. The RM creates a SQL jin and includes the fields of a related object in the `SELECT` statement, so all related objects are included in a single more complex DB query
+    - `prefetch_related()` for Many to Many relationships. Separate lookup for each relationship and “joins” them together with Python, not SQL. This allows it to prefetch many-to-many and many-to-one objects, which cannot be done using `select_related`
+    - QuerySets are unique and lazy
+    - In a QuerySet, a double underscore denotes a lookup, commonly used to filter Querysets, e.g.
+      - queryset = Book.objects.all().prefetch_related("reviews__author",)
+    - **indexing**, a common technique for improving DB performance, is a separate data structure that allows faster searches and is typically only applied to the primary key in a model. The downside is that indexes require additional space on a disk so they must be used with care.
+      - if a given field is being used frequently, such as 10-25% of all queries, it is a prime candidate to be indexed. It's best to include this syntax in the `Meta` section, e.g.
+        - class Meta:
+            indexes = [ # new
+              models.Index(fields=["id"], name="id_index"),
+            ]
+            permissions=[("special_status", "Can read all books"),]
+  - **caching** - Django has its own cache framework which includes four different caching options in descending order of granularity:
+    1) The per-site cache233 is the simplest to set up and caches your entire site.
+    2) The per-view cache234 lets you cache individual views.
+    3) Template fragment caching235 lets you specify a specific section of a template to cache.
+    4) The low-level cache API236 lets you manually set, retrieve, and maintain specific objects in the cache.
+    - As a site grows in size, a dedicated and separate caching server often makes sense. The two most popular options for this are Redis and Memcached which, as of Django 4.0, both come with built-in Django support.
+    - There are also several third-party packages that can be helpful in identifying N+1 issues, most notably nplusone, django-zen-queries, and django-auto-prefetch.
 ### 17. Security in Django, native and 3party
 ### 18. Deployment, upgrades to migrate from Django webserver, local static file handling, `ALLOWED_HOSTS`
