@@ -171,6 +171,7 @@ I understand the need for consistency in formatting for VSCode. I'll ensure the 
     - update home.html to display the new page
     - Step order almost doesn't matter since all are needed for signup to work
     - Vincent recommends urls -> views -> templates workflow
+    
 ### 7. Static asset configuration for CSS, JS, images, Bootstrap
   - for local dev, the Django webserver automatically serves static files with minimal configuration required. They can be placed in an app-level directory called `static`
     - however, because most projects reuse static assets across apps, the more common approach is a base-level `static` directory folder with all files
@@ -184,6 +185,7 @@ I understand the need for consistency in formatting for VSCode. I'll ensure the 
     - `STATICFILES_STORAGE` is the file storage engine used. By default, implicitly set to `django.contrib.staticfiles.storage.StaticFilesStorage`, but we make that explicit for this project.
     - finally, run the terminal command `python manage.py collectstatic` to execute
   - BOOTSTRAP can be installed locally or used via a CDN, recommended. Much better to deliver a cached version of Bootstrap's compiled CSS and JS to our project.
+
 ### 8. Advanced user reg; email-only login & social auth via `django-allauth` 3party package
   - many users use the popular django-allauth third-party package when setting up authentication to prevent security leaks/errors in development
     - install third-party dependency workflow: 
@@ -203,6 +205,7 @@ I understand the need for consistency in formatting for VSCode. I'll ensure the 
       - ACCOUNT_UNIQUE_EMAIL = True
       - This will require users to create accounts using email, but then auto generate usernames for them based on their email. If you fully remove the username from the custom user model, it requires AbstractBaseUser and is much mre complex.
       - In the case where two usernames with different emails coincide, `django-allauth` automatically adds a random two-digit string to the username.
+
 ### 9. environment variables
   - loaded at run time rather than hard coded into database
   - See Twelve-factor App Design; also Django best practice for security and simpler local/production config
@@ -215,6 +218,7 @@ I understand the need for consistency in formatting for VSCode. I'll ensure the 
   - Note that if your `SECRET_KEY` includes a dollar sign, $, then you need to add an additional dollar sign, $$, when copying to docker. This is due to how `docker-compose` handles variable substitutiona. Otherwise you will see an error!
   - use the Django deployment checklist, especially update DEBUG and ALLOWED_HOSTS
   - "When we installed `environs[django]` earlier, the Django “goodies” included the elegant `dj-database-url129` package, which takes all the database configurations needed for our database, SQLite or PostgreSQL. This will be very helpful later on in production."
+
 ### 10. email; adding a dedicated 3party provider
   - "email_confirmation_- message.txt file located within django-allauth/allauth/templates/account/email. If you look at this directory’s content there is also a subject line file, email_confirmation_message.txt that we can and will change.
   - To customize these files we’ll override them by recreating the same structure of django-allauth in our project. That means creating an email directory within the templates/account directory."
@@ -257,7 +261,21 @@ I understand the need for consistency in formatting for VSCode. I'll ensure the 
   - Django does not store raw passwords which means even as a superuser we cannot see individual user passwords. We can change the password to something else but we can’t just copy and paste user passwords. All passwords are encrypted by default.
   
 ### 13. image uploading
+  - Django refers to static files as `static` whereas anything uploaded by a user, whether it be a file or an image, is referred to as `media`. This is because we can trust the former by default, but not the latter. Important to validate all uploaded files, since a bad actor can attack a site blindly accepting uploads.
+  - For this case we need the Python image processing lib Pillow. 
+  - Two `settings.py` configurations that default to empty and not displayed:
+    - `MEDIA_ROOT` is the absolute file system path to the directory for user-uploaded files 
+    - `MEDIA_URL` is the URL we can use in our templates for the files
+  - since user-uploaded content is assumed to exist in a production context, to see media items locally we need to update `django_project/urls.py` to show the files locally. This involves importing both `settings` and `static` at the top and then adding an additional line at the bottom.
+    - `cover = models.ImageField(upload_to="covers/")`
+  - It’s common to see blank and nulla used together to set a default value on a field. A gotcha is that the field type – ImageField vs. CharField and so on – dictates how to use them properly so closely read the documentation for future use.
+  - We must add some basic logic to our template so that if a cover is not present the template doesn’t look for it!
+    - `{% if book.cover %}<img class="bookcover" src="{{ book.cover.url}}" alt="{{ book.title }}">{% endif %}`
+  - Steps that a truly production website could take: storing all media files on a dedicated CDN (Content Delivery Network) rather than its our own server. The popular third-party package django-storages178 allows for storing Django media files on a service like Amazon’s S3.
+  - "Heroku has an ephemeral file system179. Each internal dyno boots with a clean copy of the file system from the most recent deploy. Static files are located on the file system; media files are not. As a result, in production media files will not remain with Heroku. Using django-storages is therefore basically mandatory alongside Heroku and will be mentioned again in the deployment chapter."
+
 ### 14. site permissions; lockdown
+  -
 ### 15. complex search
 ### 16. performance optimizations via `django-debug-toolbar` to inspect queries/templates, database indexes, front-end assets, multiple built-in caching options
 ### 17. Security in Django, native and 3party
