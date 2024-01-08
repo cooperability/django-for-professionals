@@ -285,7 +285,31 @@ I understand the need for consistency in formatting for VSCode. I'll ensure the 
   - we also use `PermissionRequiredMixin` and `UserPassesTestMixin` in this section
   - In large projects Groups, Django's way of applying permissions to a category of users, become prominent, with a dedicated `Groups` section on the admin page which makes setting permissions much easier. An example is premium users.
     - Note that you also must test these permissions heavily in order to make sure the site still works and has desired behavior
+
 ### 15. complex search
+  - a **QuerySet** is used to filter the results from a database model.
+    - contains and icontains are easy filters to implement in a queryset, e.g.
+      - `queryset = Book.objects.filter(title__icontains="beginners")`
+    - For basic filtering most of the time the built-in queryset methods of `filter()`, `all()`, `get()`, or `exclude()` will be enough. However there is also a very robust and detailed QuerySet API available as well
+  - You can chain filters, but dfor a more complex lookup that can use "OR" and not just "AND", you'll need to turn to Q objects.
+  - There are only two options for “how” a form is sent: either via GET or POST HTTP methods.
+    - A POST bundles up form data, encodes it for transmission, sends it to the server, and then receives a response. Any request that changes the state of the database–creates, edits, or deletes data– should use a POST.
+    - A GET bundles form data into a string that is added to the destination URL. GET should only be used for requests that do not affect the state of the application, such as a search where nothing within the database is changing, basically we’re 
+    just doing a filtered list view.
+  - Main search infra:
+    - urls.py:
+      -     path("search/", SearchResultsListView.as_view(), name="search_results"),
+    - views.py:
+      - def get_queryset(self):
+        query = self.request.GET.get("q")
+        return Book.objects.filter(
+            Q(title__icontains=query) | Q(author__icontains=query)
+        )
+    - base.html:
+      -                 <form class="d-flex" action="{% url 'search_results' %}" method="get">
+                    <input class="form-control me-2" type="search" name="q" placeholder="Search" aria-\ label="Search">
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </form>
 ### 16. performance optimizations via `django-debug-toolbar` to inspect queries/templates, database indexes, front-end assets, multiple built-in caching options
 ### 17. Security in Django, native and 3party
 ### 18. Deployment, upgrades to migrate from Django webserver, local static file handling, `ALLOWED_HOSTS`
