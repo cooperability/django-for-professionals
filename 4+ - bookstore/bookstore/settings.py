@@ -171,8 +171,7 @@ ACCOUNT_UNIQUE_EMAIL = True
 
 # production
 DEBUG = env.bool("DJANGO_DEBUG", default=False)
-ALLOWED_HOSTS = [".herokuapp.com", "localhost", "127.0.0.1"]
-
+ALLOWED_HOSTS = ["pure-oasis-27909.herokuapp.com", "localhost", "127.0.0.1"]
 # email
 DEFAULT_FROM_EMAIL = "admin@boook.com"
 
