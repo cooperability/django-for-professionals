@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "django.contrib.sites",
     # Third-party
@@ -68,6 +69,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.cache.FetchFromCacheMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = "bookstore.urls"
@@ -138,7 +140,7 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
@@ -169,8 +171,7 @@ ACCOUNT_UNIQUE_EMAIL = True
 
 # production
 DEBUG = env.bool("DJANGO_DEBUG", default=False)
-ALLOWED_HOSTS = [".herokuapp.com", "localhost", "127.0.0.1"]
-
+ALLOWED_HOSTS = ["pure-oasis-27909.herokuapp.com", "localhost", "127.0.0.1"]
 # email
 DEFAULT_FROM_EMAIL = "admin@boook.com"
 
