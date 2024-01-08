@@ -185,6 +185,24 @@ I understand the need for consistency in formatting for VSCode. I'll ensure the 
     - finally, run the terminal command `python manage.py collectstatic` to execute
   - BOOTSTRAP can be installed locally or used via a CDN, recommended. Much better to deliver a cached version of Bootstrap's compiled CSS and JS to our project.
 ### 8. Advanced user reg; email-only login & social auth via `django-allauth` 3party package
+  - many users use the popular django-allauth third-party package when setting up authentication to prevent security leaks/errors in development
+    - install third-party dependency workflow: 
+      - add to `requirements.txt`, spin down the current docker container, rebuild the image, and start a new container.
+      - update `INSTALLED_APPS` config within `settings.py`
+      - configure any additional implicitly set variables in `settings.py`
+      - migrate to account for any changes in `settings.py`
+    - django-allauth requires an update to Django's `AUTHENTICATION_BACKENDS`. By default, Django includes `ModelBackend` which is needed to login by username in the Django admin. `django-allauth` needs its own additional backend, `AuthenticationBackend`, so users can login by e-mail.
+    - you can also reset the implicitly set configuration `EMAIL_BACKEND`, which looks for a cnfiigured SMTP server to send emails by default. `django-allauth` will send such an email on successful registration, but we need to congifure an SMTP server first.
+    - Django’s auth app looks for templates within a templates/registration directory, but allauth prefers they be located within a templates/account directory.
+    - update the URL links within `templates/_base.html` to use `django-allauth`’s URL names rather than Django’s. We do this by adding an `account_` prefix so Django’s `logout` will now be `account_logout`, `login` will be `account_login`, and `signup` will be `account_signup`.
+    - `allauth` also provides a convenient "remember me" box for login creds, which needs to be added in `settings.py` as `ACCOUNT_SESSION_REMEMBER = True`
+    - four more config options to set:
+      - ACCOUNT_USERNAME_REQUIRED = False
+      - ACCOUNT_AUTHENTICATION_METHOD = "email"
+      - ACCOUNT_EMAIL_REQUIRED = True
+      - ACCOUNT_UNIQUE_EMAIL = True
+      - This will require users to create accounts using email, but then auto generate usernames for them based on their email. If you fully remove the username from the custom user model, it requires AbstractBaseUser and is much mre complex.
+      - In the case where two usernames with different emails coincide, `django-allauth` automatically adds a random two-digit string to the username.
 ### 9. environment variables
 ### 10. email; adding a dedicated 3party provider
 ### 11. models, tests, pages for bookstore via `books` app
