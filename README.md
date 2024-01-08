@@ -171,7 +171,7 @@ I understand the need for consistency in formatting for VSCode. I'll ensure the 
     - update home.html to display the new page
     - Step order almost doesn't matter since all are needed for signup to work
     - Vincent recommends urls -> views -> templates workflow
-    
+
 ### 7. Static asset configuration for CSS, JS, images, Bootstrap
   - for local dev, the Django webserver automatically serves static files with minimal configuration required. They can be placed in an app-level directory called `static`
     - however, because most projects reuse static assets across apps, the more common approach is a base-level `static` directory folder with all files
@@ -275,7 +275,16 @@ I understand the need for consistency in formatting for VSCode. I'll ensure the 
   - "Heroku has an ephemeral file system179. Each internal dyno boots with a clean copy of the file system from the most recent deploy. Static files are located on the file system; media files are not. As a result, in production media files will not remain with Heroku. Using django-storages is therefore basically mandatory alongside Heroku and will be mentioned again in the deployment chapter."
 
 ### 14. site permissions; lockdown
-  -
+  - "Django comes with built-in authorization options for locking down pages to either logged in users, specific groups, or users with the proper individual permission. Confusingly there are multiple ways to add even the most basic permission: restricting access only to logged-in users. It can be done in a raw way using the `login_required()` decorator, or since we are using class-based views so far via the `LoginRequired` mixin."
+  - It is important that `LoginRequiredMixin` come before `ListView` in order to work properly. Mixins are powerful but can be a little tricky in practice. As the official docs note, “not all mixins can be used together, and not all generic class based views can be used with all other mixins.
+  - It's common to set custom permissions using the `Meta` class of database models:
+    - `class Meta: # new permissions = [
+            ("special_status", "Can read all books"),
+        ]
+    -Once these attributes are defined for a class, they can be easily changed using Django admin panel
+  - we also use `PermissionRequiredMixin` and `UserPassesTestMixin` in this section
+  - In large projects Groups, Django's way of applying permissions to a category of users, become prominent, with a dedicated `Groups` section on the admin page which makes setting permissions much easier. An example is premium users.
+    - Note that you also must test these permissions heavily in order to make sure the site still works and has desired behavior
 ### 15. complex search
 ### 16. performance optimizations via `django-debug-toolbar` to inspect queries/templates, database indexes, front-end assets, multiple built-in caching options
 ### 17. Security in Django, native and 3party
