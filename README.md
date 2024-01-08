@@ -185,6 +185,7 @@ I understand the need for consistency in formatting for VSCode. I'll ensure the 
     - `STATICFILES_STORAGE` is the file storage engine used. By default, implicitly set to `django.contrib.staticfiles.storage.StaticFilesStorage`, but we make that explicit for this project.
     - finally, run the terminal command `python manage.py collectstatic` to execute
   - BOOTSTRAP can be installed locally or used via a CDN, recommended. Much better to deliver a cached version of Bootstrap's compiled CSS and JS to our project.
+  - "For production, the collectstatic command must be run to compile all static files into a single directory specified by STATIC_ROOT. The consolidated files can then be served either on the same server, a separate server, or a dedicated cloud service/CDN by updating STATICFILES_STORAGE."
 
 ### 8. Advanced user reg; email-only login & social auth via `django-allauth` 3party package
   - many users use the popular django-allauth third-party package when setting up authentication to prevent security leaks/errors in development
@@ -229,6 +230,7 @@ I understand the need for consistency in formatting for VSCode. I'll ensure the 
   - The locations of the `django-allauth` default password reset and password change pages are as follows: • http://127.0.0.1:8000/accounts/password/reset/
                         • http://127.0.0.1:8000/accounts/password/change/
   - when ready to use a real email server, add `EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"` to `settings.py` and configure EMAIL_HOST, EMAIL_HOST_USER, EMAIL_HOST_- PASSWORD, EMAIL_PORT, and EMAIL_USE_TLS based on the instructions from your email provider as environment variables.
+
 ### 11. models, tests, pages for bookstore via `books` app
   - new app workflow: `docker-compose exec web python manage.py startapp newapp`; then add `newapp` to INSTALLED_APPS in `settings.py`
   - in a model, the __str__ method controls how the object is outputted in Admin and Django shell.
@@ -389,5 +391,13 @@ I understand the need for consistency in formatting for VSCode. I'll ensure the 
       - "DJANGO_CSRF_COOKIE_SECURE=False"
   - **extra issue: strengthening Django Admin**
     - change the admin url to something else so it's not so easily accessible. You can simply change the URL pattern in urls.py of your project.
-    
+  - Summary: "By using a docker-compose-prod.yml file we can accurately test, within Docker, our production settings before deploying the site live. And by using default values we can both simplify the environment variables in the file as well as ensure that if something goes awry with environment variables we will default to secure production values."
 ### 18. Deployment, upgrades to migrate from Django webserver, local static file handling, `ALLOWED_HOSTS`
+  - " A PaaS is an opinionated hosting option that handles much of the initial configura- tion and scaling needed for a website. Popular examples include Heroku298, PythonAnywhere299, and Dokku300 among many others. While a PaaS costs more money upfront than an IaaS it saves an incredible amount of developer time, handles security updates automatically, and can be quickly scaled."
+  - "An IaaS by contrast provides total flexibility and is typically cheaper, but it requires a high degree of knowledge and effort to properly set up. Prominent IaaS options include DigitalOcean301, Linode302, Amazon EC2303, and Google Compute Engine304 among many others."
+  - IaaS is more cmplex and varies widely in configuration
+  - We use WhiteNoise to help serve static files to Heroku; search `settings` to see changes
+  - "django_project/wsgi.py file was created with a default WSGI (Web Server Gateway Interface)310 configuration. This is a specification for how a web app (like our Bookstore project) communicates with a web server. For production it is common to swap this out for either Gunicorn311 or uWSGI312. Both offer a performance boost, but Gunicorn is more focused and simpler to implement so it will be our choice."
+    - to use Gunicorn, add to requirements and the following to Dockerfile/command:
+      - command: gunicorn bookstore.wsgi -b 0.0.0.0:8000
+  - Traditional non-Docker Heroku relies on a custom Procfile for configuring a site for deployment. For containers Heroku relies on a similar approach but it is called a heroku.yml file.
