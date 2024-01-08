@@ -15,6 +15,12 @@ class Book(models.Model):
         permissions = [
             ("special_status", "Can read all books"),
         ]
+        indexes = [
+            models.Index(fields=["id"], name="id_index"),
+        ]
+        permissions = [
+            ("special_status", "Can read all books"),
+        ]
 
     def __str__(self):
         return self.title
