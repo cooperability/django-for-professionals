@@ -172,6 +172,18 @@ I understand the need for consistency in formatting for VSCode. I'll ensure the 
     - Step order almost doesn't matter since all are needed for signup to work
     - Vincent recommends urls -> views -> templates workflow
 ### 7. Static asset configuration for CSS, JS, images, Bootstrap
+  - for local dev, the Django webserver automatically serves static files with minimal configuration required. They can be placed in an app-level directory called `static`
+    - however, because most projects reuse static assets across apps, the more common approach is a base-level `static` directory folder with all files
+  - Thus when we eventually push our code to both GitHub and Heroku these empty directories will not appear which can cause problems in deployment when collectstatic is run. To avoid this we add an empty file to each empty directory.
+  - by default, for local usage, all static files are at `http://127.0.0.1:8000/static/`
+  - built-in `staticfiles` app that ships with django in the INSTALLED_APPS ships with a quick helper view whiich serves files locally for development, and automatically searches for a `static` directory within each app
+    - or set the value: `STATICFILES_DIRS = [BASE_DIR / "static"]`
+  - static assets must be explicitly loaded into templates using {% load static %} e.g. css must be explicitly loaded to be displayed
+  - `collectstatic` - In a production environment, it is far more efficient to combine all static files into one location and serve that in a single, larger HTTP request. `collectstatic` does this for us, but requires the `STATIC_ROOT` and `STATICFILES_STORAGE` configuration in `settings.py`
+    - When `collectstatic` is run locally, it combines all available static files defined by STATICFILES_DIRS and places them in a directory defined as `STATIC_ROOT`. For this project, we set `STATIC_ROOT` to be the base directory with the name staticfiles.
+    - `STATICFILES_STORAGE` is the file storage engine used. By default, implicitly set to `django.contrib.staticfiles.storage.StaticFilesStorage`, but we make that explicit for this project.
+    - finally, run the terminal command `python manage.py collectstatic` to execute
+  - BOOTSTRAP can be installed locally or used via a CDN, recommended. Much better to deliver a cached version of Bootstrap's compiled CSS and JS to our project.
 ### 8. Advanced user reg; email-only login & social auth via `django-allauth` 3party package
 ### 9. environment variables
 ### 10. email; adding a dedicated 3party provider
