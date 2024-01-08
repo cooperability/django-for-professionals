@@ -25,7 +25,7 @@ class HomepageTests(SimpleTestCase):
         response = self.client.get("/")
         self.assertNotContains(response, "Hi there! I should not be on the page.")
 
-    def test_homepage_url_resolves_homepageview(self):  # new
+    def test_homepage_url_resolves_homepageview(self):
         view = resolve("/")
         self.assertEqual(view.func.__name__, HomePageView.as_view().__name__)
 

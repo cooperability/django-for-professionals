@@ -226,6 +226,26 @@ I understand the need for consistency in formatting for VSCode. I'll ensure the 
                         • http://127.0.0.1:8000/accounts/password/change/
   - when ready to use a real email server, add `EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"` to `settings.py` and configure EMAIL_HOST, EMAIL_HOST_USER, EMAIL_HOST_- PASSWORD, EMAIL_PORT, and EMAIL_USE_TLS based on the instructions from your email provider as environment variables.
 ### 11. models, tests, pages for bookstore via `books` app
+  - new app workflow: `docker-compose exec web python manage.py startapp newapp`; then add `newapp` to INSTALLED_APPS in `settings.py`
+  - in a model, the __str__ method controls how the object is outputted in Admin and Django shell.
+  - to change what fields you want displayed in a certain list of admin objects, alter the admin file with a new `list_display` attribute for your class, and register the class and admin with the site, e.g.
+    - `class BookAdmin(admin.ModelAdmin):
+      - list_display = ("title", "author", "price",)
+      - admin.site.register(Book, BookAdmin)`
+  - Once a database model is complete, we need to create the necessary views, URLs, and templates. We can display the information on our Web application. WSV recommends starting with the URLs, then the views, then the templates.
+  - `ListView` is a Generic Class-Based View provided for common use cases like this. All we must do is specify the proper model and template to be used.
+  - Django automatically adds an auto-incrementing primary key to our database models, called `id` and accessed with either `id` or `pk`. We can then cast this as an integer and use it in routes, e.g.
+    - `path("<int:pk>/", BookDetailView.as_view(), name="book_detail"),` where we use the universal id of a book as its path
+    - `pk` is more reliable than `id` for this since it signifies primary key, whereas `id` can be changed
+  - in a template, we can showcase the page title in title tags so it appears on the browser tab label, e.g.
+    - {% block title %}{{ object.title }}{% endblock title %}
+  - Just as ListView defaults to object_list which we updated to be more specific, so too DetailView defaults to object which we can make more descriptive using context_object_name.
+  - `get_absolute_url` method sets a canonical URL for a model, and is required when usiing the `reverse()` function.
+  - "Using the pk field in the URL of our DetailView is quick and easy, but not ideal for a real-world project. The pk is currently the same as our auto-incrementing id. Among other concerns, it tells a potential hacker exactly how many records you have in your database; it tells them exactly what the id is which can be used in a potential attack; and there can be synchronization issues if you have multiple front-ends."
+    - instead, use a slug - a short URL label, or better yet a UUID, Universally Unique
+  - If you create a UU ID for all existing entries in your database, a new migration would cause serious problems. Instead, simply delete old migrations and start over.
+    - `docker-compose exec web rm -r books/migrations`
+
 ### 12. addition of reviews to bookstore; FOREIGN KEYS
 ### 13. image uploading
 ### 14. site permissions; lockdown
