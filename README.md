@@ -346,5 +346,48 @@ I understand the need for consistency in formatting for VSCode. I'll ensure the 
     4) The low-level cache API236 lets you manually set, retrieve, and maintain specific objects in the cache.
     - As a site grows in size, a dedicated and separate caching server often makes sense. The two most popular options for this are Redis and Memcached which, as of Django 4.0, both come with built-in Django support.
     - There are also several third-party packages that can be helpful in identifying N+1 issues, most notably nplusone, django-zen-queries, and django-auto-prefetch.
+
 ### 17. Security in Django, native and 3party
+  - Best practices: Keep project and packages up-to-date (even monthly security patches), restrict user permissions except where absolutely necessary. it's unwise to use Django's Long-Term Support(LTS) versions and better to update.
+  - Django features deprecation warnings that can and should be run for each new release by typing `python -Wa manage.py test`
+  - Use the deployment checklist! or even better, you can automate thiis with the command `python manage.py check --deploy`
+    - this will show a list of typically 6**issues**, with typical ones below
+  - create a separate `docker-compose-prod.yml` file to contain production details, then IMMEDIATELY add to .gitignore
+    - **Issue 1** set DEBUG false here to eliminate an issue with deploy
+    - default all settings in this file to the moost secure, production-only options
+  - To run our new file, spin down the Docker container and restart it via the -f flag to specify an alternate compose file. By default, Docker assumes a `docker-compose.yml` so adding the -f flag is unnecessary in that case.
+    - specifically, `docker-compose -f docker-compose-prod.yml up -d`
+  - Terminal command to tell Python package `secrets` to make a new secret key:
+    - `docker-compose exec web python -c "import secrets; print(secrets.token_urlsafe(38))"`
+    - **Issue 2** Take this key and copy into `docker-compose-prod.yml`
+  - **Issue 3** - set a secure SSL redirect in `settings.py`
+    - `SECURE_SSL_REDIRECT = env.bool("DJANGO_SECURE_SSL_REDIRECT", default=True)`
+    - Then add the env variable to docker-compse.yml, so that for local development it defaults to the less secure False.
+    - "Companies typically actually have three different environments set up: one for local, one for production, and a staging server that mimics production but allows for more actual testing before switching things over completely. Going forward if you want to try out the local website with production settings be aware you will have to toggle off DJANGO_SECURE_SSL_REDIRECT."
+  - **Issue 4** There are three implicit HSTS configurations in our settings.py file that need to be updated for production:
+    - `SECURE_HSTS_SECONDS = 0` -> 2592000, 30 days, the greater the better for security purposes
+    - `SECURE_HSTS_INCLUDE_SUBDOMAINS = False` -> True, force subdomains to use SSL
+    - `SECURE_HSTS_PRELOAD = False` -> True, only works when there's a nonzero value for SECURE_HSTS_SECONDS
+    - so e.g. actual sample code in settings.py:
+      - SECURE_HSTS_SECONDS = env.int("DJANGO_SECURE_HSTS_SECONDS", default=2592000)
+      - SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool(
+         "DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", default=True
+        )
+      -SECURE_HSTS_PRELOAD = env.bool("DJANGO_SECURE_HSTS_PRELOAD", default=True)
+    - and e.g. actual vars in Docker-compose (not prod):
+      - "DJANGO_SECURE_HSTS_SECONDS = 0"
+      - "SECURE_HSTS_INCLUDE_SUBDOMAINS = False"
+      - "SECURE_HSTS_PRELOAD = False"
+  - **Issue 5 and 6** Secure cokiies - HTTP protocol is stateless by design; no way to tell if a user is authenticated ther than an including an identifier in the HTTP header. So cookies store thiis info on the client's computer
+    - "Django uses sessions and cookies for this, as do most websites. But cookies can and should be forced over HTTPS as well via the SESSION_COOKIE_SECURE config. By default Django sets this value to False for local development; in production it needs to be True."
+    - "The second issue is CSRF_COOKIE_SECURE293, which defaults to False but in production should be True so that only cookies marked as “secure” will be sent with an HTTPS connection."
+    - As befre, two new vars in `settings.py`:
+      - SESSION_COOKIE_SECURE = env.bool("DJANGO_SESSION_COOKIE_SECURE", default=True)
+      - CSRF_COOKIE_SECURE = env.bool("DJANGO_CSRF_COOKIE_SECURE", default=True)
+    - And two in docker-compose.yml, under web/environment:
+      - "DJANGO_SESSION_COOKIE_SECURE=False"
+      - "DJANGO_CSRF_COOKIE_SECURE=False"
+  - **extra issue: strengthening Django Admin**
+    - change the admin url to something else so it's not so easily accessible. You can simply change the URL pattern in urls.py of your project.
+    
 ### 18. Deployment, upgrades to migrate from Django webserver, local static file handling, `ALLOWED_HOSTS`
