@@ -204,6 +204,17 @@ I understand the need for consistency in formatting for VSCode. I'll ensure the 
       - This will require users to create accounts using email, but then auto generate usernames for them based on their email. If you fully remove the username from the custom user model, it requires AbstractBaseUser and is much mre complex.
       - In the case where two usernames with different emails coincide, `django-allauth` automatically adds a random two-digit string to the username.
 ### 9. environment variables
+  - loaded at run time rather than hard coded into database
+  - See Twelve-factor App Design; also Django best practice for security and simpler local/production config
+  - store any truly secret info apart from the code base, so it's not committed by accident
+  - environs package has Django-specific package installs `environs[django]==9.5.0`
+  - SECRET_KEY is a randomly generated string used for cryptographic signing and created whenever the startproject command is run.
+  - 2 steps to switch environment vars:
+    - add environment variable to `docker-compose.yml`
+    - update `django_project/settings.py` to point to the var
+  - Note that if your `SECRET_KEY` includes a dollar sign, $, then you need to add an additional dollar sign, $$, when copying to docker. This is due to how `docker-compose` handles variable substitutiona. Otherwise you will see an error!
+  - use the Django deployment checklist, especially update DEBUG and ALLOWED_HOSTS
+  - "When we installed `environs[django]` earlier, the Django “goodies” included the elegant `dj-database-url129` package, which takes all the database configurations needed for our database, SQLite or PostgreSQL. This will be very helpful later on in production."
 ### 10. email; adding a dedicated 3party provider
 ### 11. models, tests, pages for bookstore via `books` app
 ### 12. addition of reviews to bookstore; FOREIGN KEYS
