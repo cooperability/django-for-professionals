@@ -143,6 +143,34 @@ I understand the need for consistency in formatting for VSCode. I'll ensure the 
   ```
 
 ### 6. complete user registration using built-in `auth` app
+- **User Registration**:
+  - Log in and log out are straightforward since Django provides views and URLs, but Sign up has no built-in solution and is more challenging.
+  - For this site we used the `AUTH_USER_MODEL` setting to tell Django to use our custom user model, not the default `User` module here. That's why we have to wait to configure before migrating anything
+  - When you run the migrate command for the first time you create 6 installed apps in settings.py which power the site:
+    - INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    ]
+  - The `user.is_authenticated` check can be used by default in an HTML template to dynamically render different components for logged in users. Also `user.email`
+  - Variables are marked in an HTML template by using double open-close brackets {{}}
+  - you can use in-project urls in templates:<a href="{%url 'login'%}">Log in</a> 
+    - this TEMPLATE TAG {%%} takes as its first argument a named URL pattern
+  - users and related variables are automatically available in your template through TEMPLATE CONTEXTS, which mean that a template is loaded with corresponding data from views.py file.
+  - you can add csrf protection on any submittable form by adding the {% csrf_token %} template tag to the start of the form. This prevents malicious websites from changing the link, or attacking sites/users. Django already has CSRF middleware for all this!
+  - form.as_p displays each form field with a paragraph p tag
+  - the logout function uses `LogoutView` in source code, and has URL name `logout`, so it can be referred to in a template tag as just logout. You can also set this with LOGOUT_REDIRECT_URL
+  - 5 standard steps to create any new Django page; for the specific case of creating a user registration page:
+    - create an app-level accounts/urls.py file
+    - update the project-level django_project/urls.py to point to the accounts app 
+    - add a view called SignupPageView
+    - create a signup.html template file
+    - update home.html to display the new page
+    - Step order almost doesn't matter since all are needed for signup to work
+    - Vincent recommends urls -> views -> templates workflow
 ### 7. Static asset configuration for CSS, JS, images, Bootstrap
 ### 8. Advanced user reg; email-only login & social auth via `django-allauth` 3party package
 ### 9. environment variables
