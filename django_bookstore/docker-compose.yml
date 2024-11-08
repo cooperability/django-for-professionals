@@ -1,0 +1,39 @@
+services:
+  web:
+    build: .
+    command: >
+      bash -c "python manage.py migrate &&
+               python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/code
+    ports:
+      - 8000:8000
+    depends_on:
+      db:
+        condition: service_started
+    environment:
+      - "DATABASE_URL=postgres://postgres@db/postgres"
+      - "DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}"
+      #DEBUG - change to True for local dev; false for production
+      - "DJANGO_DEBUG=False"
+      #DJANGO_SECURE_SSL_REDIRECT - false for local dev; true for production
+      - "DJANGO_SECURE_SSL_REDIRECT=True"
+      #DJANGO_SECURE_HSTS_SECONDS - 0 for local dev; 2592000 for production
+      - "DJANGO_SECURE_HSTS_SECONDS=2592000"
+      #SECURE_HSTS_INCLUDE_SUBDOMAINS - false for local dev; true for production
+      - "SECURE_HSTS_INCLUDE_SUBDOMAINS=True"
+      #SECURE_HSTS_PRELOAD - false for local dev; true for production
+      - "SECURE_HSTS_PRELOAD=True"
+      #DJANGO_SESSION_COOKIE_SECURE - false for local dev; true for production
+      - "DJANGO_SESSION_COOKIE_SECURE=True"
+      #DJANGO_CSRF_COOKIE_SECURE - false for local dev; true for production
+      - "DJANGO_CSRF_COOKIE_SECURE=True"
+    restart: always
+  db:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - "POSTGRES_HOST_AUTH_METHOD=trust"
+volumes:
+  postgres_data:
